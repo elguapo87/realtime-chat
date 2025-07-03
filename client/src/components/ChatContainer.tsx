@@ -13,9 +13,11 @@ type UserType = {
 type HomePageProps = {
   selectedUser: UserType | null;
   setSelectedUser: React.Dispatch<React.SetStateAction<UserType | null>>;
+  showRightSide?: boolean;
+  setShowRightSide?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const ChatContainer = ({ selectedUser, setSelectedUser }: HomePageProps) => {
+const ChatContainer = ({ selectedUser, setSelectedUser, showRightSide, setShowRightSide }: HomePageProps) => {
 
   const scrollEnd = useRef<HTMLDivElement | null>(null);
 
@@ -25,7 +27,7 @@ const ChatContainer = ({ selectedUser, setSelectedUser }: HomePageProps) => {
     }
   }, []);
 
-  return selectedUser ? (
+  return selectedUser && !showRightSide ? (
     <div className="h-full overflow-scroll relative backdrop-blur-lg">
       {/* HEADER */}
       <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500">
@@ -37,6 +39,7 @@ const ChatContainer = ({ selectedUser, setSelectedUser }: HomePageProps) => {
         </p>
 
         <img onClick={() => { setSelectedUser(null) }} src={assets.arrow_icon} alt="" className="md:hidden max-w-7" />
+        <img onClick={() => setShowRightSide?.(true)} src={assets.arrow_icon} alt="" className="md:hidden rotate-180 max-w-7" />
       </div>
 
       {/* CHAT AREA */}
