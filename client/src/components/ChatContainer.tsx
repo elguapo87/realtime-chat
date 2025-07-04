@@ -51,7 +51,7 @@ const ChatContainer = ({ selectedUser, setSelectedUser, showRightSide, setShowRi
                 ?
               <img src={msg.image} alt="" className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-8" />
                 :
-              <p className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all bg-violet-500/30 text-white ${msg.senderId === "680f5116f10f3cd28382ed02" ? "rounded-br-none" : "rounded-bl-none"}`}>
+              <p className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all text-white ${msg.senderId === "680f5116f10f3cd28382ed02" ? "rounded-br-none bg-violet-500/30" : "rounded-bl-none bg-violet-500/80"}`}>
                 {msg.text}
               </p>
             }
