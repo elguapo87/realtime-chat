@@ -3,6 +3,7 @@ import express, { Express } from "express";
 import cors from "cors";
 import http from "http";
 import connectDB from "./config/db";
+import userRoutes from "./routes/userRoutes";
 
 // Create Expres app and HTTP server
 const app: Express = express();
@@ -19,6 +20,9 @@ app.use(cors(corsOptions));
 app.use("/api/status", (req, res) => {
     res.send("Server is live");
 });
+
+// Routes
+app.use("/api/user", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 

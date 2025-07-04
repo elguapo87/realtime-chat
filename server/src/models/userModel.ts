@@ -12,8 +12,7 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
-        minlength: 6
+        required: true
     },
     profileImage: {
         type: String,
@@ -26,4 +25,4 @@ const userSchema = new mongoose.Schema({
 
 const userModel = mongoose.models.user || mongoose.model("user", userSchema);
 
-export default userSchema;
+export default userModel;
