@@ -105,7 +105,7 @@ export const updateProfile = async (req: AuthenticatedRequest, res: Response): P
     let updatedUser;
 
     if (!profileImage) {
-        updatedUser = await userModel.findByIdAndUpdate(userId, { bio, fullName }, { new: true });
+        updatedUser = await userModel.findByIdAndUpdate(userId, { bio, fullName }, { new: true }).select("-password");
 
     } else {
         const uploadRes = await cloudinary.uploader.upload(profileImage, {
@@ -114,7 +114,7 @@ export const updateProfile = async (req: AuthenticatedRequest, res: Response): P
 
         const imageUrl = uploadRes.secure_url;
 
-        updatedUser = await userModel.findByIdAndUpdate(userId, { profileImage: imageUrl, bio, fullName }, { new: true });
+        updatedUser = await userModel.findByIdAndUpdate(userId, { profileImage: imageUrl, bio, fullName }, { new: true }).select("-password");
     }
 
     res.json({
