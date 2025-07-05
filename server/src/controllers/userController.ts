@@ -45,3 +45,34 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
         res.json({ success: false, message: errMessage });
     }
 };
+
+export const login = async (req: Request, res: Response) => {
+    try {
+        const { email, password } = req.body;
+
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            res.json({ success: false, message: "Account not exists" });
+            return;
+        }
+
+        const matchingPassword = await bcrypt.compare(password, user.password);
+        if (!matchingPassword) {
+            res.json({ success: false, message: "Invalid credentials" });
+            return;
+        }
+
+        const token = genToken(user._id);
+
+        res.json({
+            success: true,
+            user,
+            token,
+            message: "Login successfully"
+        }); 
+
+    } catch (error) {
+        const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        res.json({ success: false, message: errMessage });
+    }
+};
