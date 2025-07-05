@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
-import userModel from '../models/userModel';
+import userModel, { UserDocument } from '../models/userModel';
 import bcrypt from "bcryptjs";
 import { genToken } from '../lib/genToken';
+
+interface AuthenticatedRequest extends Request {
+    user?: UserDocument;
+}
 
 export const signUp = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -69,10 +73,25 @@ export const login = async (req: Request, res: Response) => {
             user,
             token,
             message: "Login successfully"
-        }); 
+        });
 
     } catch (error) {
         const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
         res.json({ success: false, message: errMessage });
+    }
+};
+
+export const checkAuth = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        if (!req.user) {
+            res.status(401).json({ success: false, message: "Unauthorized" });
+            return;
+        }
+
+        res.status(200).json({ success: true, user: req.user });
+
+    } catch (error) {
+        const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        res.status(500).json({ success: false, message: errMessage });
     }
 };

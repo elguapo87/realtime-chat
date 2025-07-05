@@ -13,7 +13,7 @@ export const protectRoute = async (req: AuthenticatedRequest, res: Response, nex
             res.status(401).json({ success: false, message: "Unauthorized: No token" });
             return;
         }
-
+        
         const secretKey = process.env.SECRET_KEY as string;
         if (!secretKey) {
             res.status(500).json({ success: false, message: "Missing SECRET_KEY" });
