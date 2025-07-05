@@ -22,7 +22,7 @@ export const protectRoute = async (req: AuthenticatedRequest, res: Response, nex
 
         const decoded = jwt.verify(token, secretKey) as { userId: string };
 
-        const user = await userModel.findById(decoded.userId);
+        const user = await userModel.findById(decoded.userId).select("-password");
         if (!user) {
             res.status(401).json({ success: false, message: "Unauthorized: Invalid user" });
         }

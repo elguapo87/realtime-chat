@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import userModel, { UserDocument } from '../models/userModel';
 import bcrypt from "bcryptjs";
 import { genToken } from '../lib/genToken';
+import cloudinary from '../lib/cloudinary';
 
 interface AuthenticatedRequest extends Request {
     user?: UserDocument;
@@ -94,4 +95,36 @@ export const checkAuth = async (req: AuthenticatedRequest, res: Response): Promi
         const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
         res.status(500).json({ success: false, message: errMessage });
     }
+};
+
+export const updateProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const { bio, fullName, profileImage } = req.body;
+    const userId = req.user?._id;
+
+    let updatedUser;
+
+    if (!profileImage) {
+        updatedUser = await userModel.findByIdAndUpdate(userId, { bio, fullName }, { new: true });
+
+    } else {
+        const uploadRes = await cloudinary.uploader.upload(profileImage, {
+            folder: "realtime_chat"
+        });
+
+        const imageUrl = uploadRes.secure_url;
+
+        updatedUser = await userModel.findByIdAndUpdate(userId, { profileImage: imageUrl, bio, fullName }, { new: true });
+    }
+
+    res.json({
+        success: true,
+        user: updatedUser,
+        message: "Profile updated"
+    })
+
+  } catch (error) {
+    const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).json({ success: false, message: errMessage });
+  }
 };
