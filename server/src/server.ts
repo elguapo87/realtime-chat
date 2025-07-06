@@ -4,6 +4,7 @@ import cors from "cors";
 import http from "http";
 import connectDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
+import messageRoutes from "./routes/messageRoutes";
 
 // Create Expres app and HTTP server
 const app: Express = express();
@@ -23,6 +24,7 @@ app.use("/api/status", (req, res) => {
 
 // Routes
 app.use("/api/user", userRoutes);
+app.use("/api/message", messageRoutes);
 
 const PORT = process.env.PORT || 5000;
 
