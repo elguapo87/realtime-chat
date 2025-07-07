@@ -5,10 +5,23 @@ import http from "http";
 import connectDB from "./config/db";
 import userRoutes from "./routes/userRoutes";
 import messageRoutes from "./routes/messageRoutes";
+import { registerSocketServer } from "./lib/socket";
+import { Server as SocketIOServer } from "socket.io";
 
 // Create Expres app and HTTP server
 const app: Express = express();
+
 const server = http.createServer(app);
+
+// Initialize Socket.IO
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: "*"
+  }
+});
+
+// Register socket handlers
+registerSocketServer(io);
 
 // Middleware setup
 app.use(express.json({ limit: "4mb" }));
