@@ -16,6 +16,5 @@ export const registerSocketServer = (io: Server) => {
             if (typeof userId === "string") delete userSocketMap[userId];
             io.emit("getOnlineUsers", Object.keys(userSocketMap));
         });
-        
     });
 };

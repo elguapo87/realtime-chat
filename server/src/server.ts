@@ -7,6 +7,7 @@ import userRoutes from "./routes/userRoutes";
 import messageRoutes from "./routes/messageRoutes";
 import { registerSocketServer } from "./lib/socket";
 import { Server as SocketIOServer } from "socket.io";
+import { setIO } from "./lib/socketServer";
 
 // Create Expres app and HTTP server
 const app: Express = express();
@@ -19,6 +20,8 @@ const io = new SocketIOServer(server, {
     origin: "*"
   }
 });
+
+setIO(io);
 
 // Register socket handlers
 registerSocketServer(io);

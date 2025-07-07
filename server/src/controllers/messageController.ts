@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import userModel, { UserDocument } from "../models/userModel";
 import cloudinary from "../lib/cloudinary";
 import messageModel from "../models/messageModel";
+import { userSocketMap } from "../lib/socket";
+import { getIO } from "../lib/socketServer";
 
 interface AuthenticatedRequest extends Request {
     user?: UserDocument;
@@ -28,6 +30,14 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
             text,
             image: imageUrl
         });
+
+        // Emit the message using shared `io`
+        const io = getIO();
+        const receiverSocketId = userSocketMap[receiverId];
+
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("newMessage", newMessage);
+        }
 
         res.json({ success: true, newMessage });
 
