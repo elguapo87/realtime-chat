@@ -51,6 +51,41 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
 
+    // Login function to handle user authentication and socket connection
+    const login = async (state: "Login" | "Sign Up", credentials: UserData) => {
+        try {
+            const { data } = await axios.post(`/api/user/${state}`, credentials);
+            if (data.success) {
+                setAuthUser(data.userData);
+                connectSocket(data.userData);
+                axios.defaults.headers.common["token"] = data.token;
+                setToken(data.token);
+                localStorage.setItem("token", data.token);
+                toast.success(data.message);
+
+            } else {
+                toast.error(data.message);
+            }
+
+        } catch (error) {
+            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast.error(errMessage);
+        }
+    };
+
+
+    // Logout function to handle user logout and socket disconnection
+    const logout = async () => {
+        localStorage.removeItem("token");
+        setToken(null);
+        setAuthUser(null);
+        setOnlineUsers([]);
+        axios.defaults.headers.common['token'] = null;
+        toast.success("Logged out successfully");
+        socket?.disconnect();
+    };
+
+
     // Conncect socket function to handle socket connection and online users update
     const connectSocket = (userData: { _id: string }) => {
         if (!userData || socket?.connected) return;
@@ -74,6 +109,12 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
             checkAuth();
         }
     }, [token]);
+
+    useEffect(() => {
+        return () => {
+            socket?.disconnect();
+        };
+    }, [socket]);
 
     const value = {
         axios,

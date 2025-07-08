@@ -41,6 +41,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
 
         res.json({
             success: true,
+            userData: user,
             token,
             message: "Account created successfully"
         });
@@ -71,7 +72,7 @@ export const login = async (req: Request, res: Response) => {
 
         res.json({
             success: true,
-            user,
+            userData: user,
             token,
             message: "Login successfully"
         });
