@@ -21,6 +21,8 @@ interface AppContextType {
     setToken: React.Dispatch<React.SetStateAction<string | null>>;
     authUser: UserData | null;
     setAuthUser: React.Dispatch<React.SetStateAction<UserData | null>>;
+    login: (state: "Login" | "Sign Up", credentials: Partial<UserData> & { password: string }) => Promise<void>;
+    updateProfile: (body: UserData) => Promise<void>;
 };
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -52,7 +54,7 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     // Login function to handle user authentication and socket connection
-    const login = async (state: "Login" | "Sign Up", credentials: UserData) => {
+    const login = async (state: "Login" | "Sign Up", credentials: Partial<UserData> & { password: string }) => {
         try {
             const { data } = await axios.post(`/api/user/${state}`, credentials);
             if (data.success) {
@@ -83,6 +85,25 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
         axios.defaults.headers.common['token'] = null;
         toast.success("Logged out successfully");
         socket?.disconnect();
+    };
+
+
+    // Update profile funciton to handle profile updates
+    const updateProfile = async (body: UserData) => {
+        try {
+            const { data } = await axios.put("/api/user/update", body);
+            if (data.success) {
+                setAuthUser(data.user);
+                toast.success(data.message);
+
+            } else {
+                toast.error(data.message);
+            }
+
+        } catch (error) {
+            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast.error(errMessage);
+        }
     };
 
 
@@ -122,7 +143,10 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
         token,
         setToken,
         authUser,
-        setAuthUser
+        setAuthUser,
+        login,
+        logout,
+        updateProfile
     };
 
     return (
