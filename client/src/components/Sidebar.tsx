@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import assets, { userDummyData } from "../assets/assets";
+import { useContext } from "react";
+import { AppContext } from "../context/AppContext";
 
 type UserType = {
   _id: string;
@@ -16,6 +18,10 @@ type HomePageProps = {
 
 const Sidebar = ({ selectedUser, setSelectedUser }: HomePageProps) => {
 
+  const context = useContext(AppContext);
+  if (!context) throw new Error("Sidebar must be within AppContextProvider");
+  const { logout } = context;
+
   const navigate = useNavigate();
 
   return (
@@ -30,7 +36,7 @@ const Sidebar = ({ selectedUser, setSelectedUser }: HomePageProps) => {
             <div className="absolute top-8 right-0 z-20 w-32 p-5 rounded-md bg-[#282142] border border-gray-600 text-gray-100 hidden group-hover:block">
               <p onClick={() => navigate("/profile")} className="cursor-pointer text-sm">Edit Profile</p>
               <hr className="my-2 border-t border-gray-500" />
-              <p className="cursor-pointer text-sm">Logout</p>
+              <p onClick={logout} className="cursor-pointer text-sm">Logout</p>
             </div>
           </div>
         </div>

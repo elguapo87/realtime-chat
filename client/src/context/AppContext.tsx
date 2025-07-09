@@ -24,6 +24,7 @@ interface AppContextType {
     login: (state: "Login" | "Sign Up", credentials: Partial<UserData> & { password: string }) => Promise<void>;
     updateProfile: (body: { fullName: string, bio: string, profileImage?: string }) => Promise<void>;
     validateSignup: (credentials: { email: string, password: string, fullName: string }) => Promise<void>;
+    logout: () => Promise<void>;
 };
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
