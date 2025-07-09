@@ -1,22 +1,37 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import assets from "../assets/assets"
+import { AppContext } from "../context/AppContext";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
+  const context = useContext(AppContext);
+  if (!context) throw new Error("LoginPage must be within AppContextProvider") ;
+  const { login, validateSignup } = context;
 
-  const [currentState, setCurrentState] = useState("Sign Up");
+  const [currentState, setCurrentState] = useState<"Sign Up" | "Login">("Sign Up");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [bio, setBio] = useState("");
   const [isDataSubmited, setIsDataSubmited] = useState(false);
 
-  const onSubmitHandler = async (e: { preventDefault: () => void; }) => {
+  const onSubmitHandler = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-
+    
     if (currentState === "Sign Up" && !isDataSubmited) {
-      setIsDataSubmited(true);
+      try {
+        await validateSignup({ email, fullName, password });
+        setIsDataSubmited(true);
+
+      } catch (error) {
+        const err = error as { response?: { data?: { message?: string } } };
+        const message = err.response?.data?.message || "Validation failed";
+        toast.error(message);
+      }
       return;
     }
+
+    login(currentState, { fullName, email, password, bio });
   };
 
   return (

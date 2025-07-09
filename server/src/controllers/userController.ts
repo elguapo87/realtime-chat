@@ -52,6 +52,35 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+
+export const validateSignUp = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email, password, fullName } = req.body;
+
+        if (!email || !password || !fullName) {
+            res.status(400).json({ success: false, message: "Missing fields" });
+            return;
+        }
+
+        const existingUser = await userModel.findOne({ email });
+        if (existingUser) {
+            res.status(400).json({ success: false, message: "Account already exists" });
+            return;
+        }
+
+        if (password.length < 8) {
+            res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
+            return;
+        }
+
+        res.json({ success: true, message: "Validation passed" })
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Validation error" });
+    }
+};
+
+
 export const login = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
@@ -83,6 +112,7 @@ export const login = async (req: Request, res: Response) => {
     }
 };
 
+
 export const checkAuth = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
         if (!req.user) {
@@ -99,33 +129,33 @@ export const checkAuth = async (req: AuthenticatedRequest, res: Response): Promi
 };
 
 export const updateProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  try {
-    const { bio, fullName, profileImage } = req.body;
-    const userId = req.user?._id;
+    try {
+        const { bio, fullName, profileImage } = req.body;
+        const userId = req.user?._id;
 
-    let updatedUser;
+        let updatedUser;
 
-    if (!profileImage) {
-        updatedUser = await userModel.findByIdAndUpdate(userId, { bio, fullName }, { new: true }).select("-password");
+        if (!profileImage) {
+            updatedUser = await userModel.findByIdAndUpdate(userId, { bio, fullName }, { new: true }).select("-password");
 
-    } else {
-        const uploadRes = await cloudinary.uploader.upload(profileImage, {
-            folder: "realtime_chat"
-        });
+        } else {
+            const uploadRes = await cloudinary.uploader.upload(profileImage, {
+                folder: "realtime_chat"
+            });
 
-        const imageUrl = uploadRes.secure_url;
+            const imageUrl = uploadRes.secure_url;
 
-        updatedUser = await userModel.findByIdAndUpdate(userId, { profileImage: imageUrl, bio, fullName }, { new: true }).select("-password");
+            updatedUser = await userModel.findByIdAndUpdate(userId, { profileImage: imageUrl, bio, fullName }, { new: true }).select("-password");
+        }
+
+        res.json({
+            success: true,
+            user: updatedUser,
+            message: "Profile updated"
+        })
+
+    } catch (error) {
+        const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        res.status(500).json({ success: false, message: errMessage });
     }
-
-    res.json({
-        success: true,
-        user: updatedUser,
-        message: "Profile updated"
-    })
-
-  } catch (error) {
-    const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    res.status(500).json({ success: false, message: errMessage });
-  }
 };

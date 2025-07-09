@@ -1,18 +1,36 @@
-import { useState } from "react"
+import { useContext, useState } from "react"
 import assets from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { AppContext } from "../context/AppContext";
 
 const ProfilePage = () => {
 
+  const context = useContext(AppContext);
+  if (!context) throw new Error("ProfilePage must be within AppContextProvider");
+  const { authUser, updateProfile } = context;
+
   const [selectedImg, setSelectedImg] = useState<File | null>(null);
-  const [name, setName] = useState("John Doe");
-  const [bio, setBio] = useState("Hi everyone, I am Using RealChat");
+  const [name, setName] = useState(authUser?.fullName ?? "");
+  const [bio, setBio] = useState(authUser?.bio ?? "");
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
-    navigate("/");
+
+    if (!selectedImg) {
+      await updateProfile({ fullName: name, bio });
+      navigate("/");
+      return;
+    } 
+
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedImg);
+    reader.onload = async () => {
+      const base64Image = typeof reader.result === "string" ? reader.result : undefined;
+      await updateProfile({ profileImage: base64Image, fullName: name, bio });
+      navigate("/");
+    }
   };
 
   return (
@@ -32,7 +50,7 @@ const ProfilePage = () => {
           <button type="submit" className="bg-gradient-to-r from-purple-400 to-violet-600 text-white p-2 rounded-full text-lg cursor-pointer">Save</button>
         </form>
 
-        <img src={assets.logo_icon} alt="" className="max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10" />
+        <img src={authUser?.profileImage || assets.logo_icon} alt="" className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10 ${selectedImg && "rounded-full"}`} />
       </div>
     </div>
   )

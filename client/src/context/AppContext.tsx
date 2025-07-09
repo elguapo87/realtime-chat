@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { createContext, useEffect, useState } from "react";
 
 import type { AxiosStatic } from "axios";
@@ -22,7 +22,8 @@ interface AppContextType {
     authUser: UserData | null;
     setAuthUser: React.Dispatch<React.SetStateAction<UserData | null>>;
     login: (state: "Login" | "Sign Up", credentials: Partial<UserData> & { password: string }) => Promise<void>;
-    updateProfile: (body: UserData) => Promise<void>;
+    updateProfile: (body: { fullName: string, bio: string, profileImage?: string }) => Promise<void>;
+    validateSignup: (credentials: { email: string, password: string, fullName: string }) => Promise<void>;
 };
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -32,7 +33,13 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     axios.defaults.baseURL = backendUrl;
 
-    const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+    const getInitialToken = () => {
+        const stored = localStorage.getItem("token");
+        if (!stored || stored === "null" || stored === "undefined") return null;
+        return stored;
+    };
+
+    const [token, setToken] = useState<string | null>(getInitialToken());
     const [authUser, setAuthUser] = useState<UserData | null>(null);
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [socket, setSocket] = useState<Socket | null>(null);
@@ -44,19 +51,28 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
             if (data.success) {
                 setAuthUser(data.user);
                 connectSocket(data.user);
+            } else {
+                logout();
             }
 
         } catch (error) {
-            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
-            toast.error(errMessage);
+            console.error("checkAuth failed", error);
+            logout();
         }
+    };
+
+
+    const validateSignup = async (credentials: { email: string, password: string, fullName: string }) => {
+        const { data } = await axios.post("/api/user/validate-signup", credentials);
+        return data;
     };
 
 
     // Login function to handle user authentication and socket connection
     const login = async (state: "Login" | "Sign Up", credentials: Partial<UserData> & { password: string }) => {
         try {
-            const { data } = await axios.post(`/api/user/${state}`, credentials);
+            const endpoint = state === "Sign Up" ? "signup" : "login";
+            const { data } = await axios.post(`/api/user/${endpoint}`, credentials);
             if (data.success) {
                 setAuthUser(data.userData);
                 connectSocket(data.userData);
@@ -70,7 +86,14 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
             }
 
         } catch (error) {
-            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            let errMessage = "An unknown error occurred";
+
+            if (axios.isAxiosError(error)) {
+                errMessage = error.response?.data?.message || error.message;
+            } else if (error instanceof Error) {
+                errMessage = error.message;
+            }
+
             toast.error(errMessage);
         }
     };
@@ -89,7 +112,7 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     // Update profile funciton to handle profile updates
-    const updateProfile = async (body: UserData) => {
+    const updateProfile = async (body: { fullName: string, bio: string, profileImage?: string }) => {
         try {
             const { data } = await axios.put("/api/user/update", body);
             if (data.success) {
@@ -125,9 +148,11 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     useEffect(() => {
-        if (token) {
+        if (token && token !== "null" && token !== "undefined") {
             axios.defaults.headers.common["token"] = token;
             checkAuth();
+        } else {
+            delete axios.defaults.headers.common['token'];
         }
     }, [token]);
 
@@ -146,7 +171,8 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
         setAuthUser,
         login,
         logout,
-        updateProfile
+        updateProfile,
+        validateSignup
     };
 
     return (
