@@ -21,6 +21,8 @@ interface AppContextType {
     setToken: React.Dispatch<React.SetStateAction<string | null>>;
     authUser: UserData | null;
     setAuthUser: React.Dispatch<React.SetStateAction<UserData | null>>;
+    socket: Socket | null;
+    setSocket: React.Dispatch<React.SetStateAction<Socket | null>>;
     login: (state: "Login" | "Sign Up", credentials: Partial<UserData> & { password: string }) => Promise<void>;
     updateProfile: (body: { fullName: string, bio: string, profileImage?: string }) => Promise<void>;
     validateSignup: (credentials: { email: string, password: string, fullName: string }) => Promise<void>;
@@ -173,7 +175,9 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         logout,
         updateProfile,
-        validateSignup
+        validateSignup,
+        socket,
+        setSocket
     };
 
     return (
