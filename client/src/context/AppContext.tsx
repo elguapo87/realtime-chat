@@ -27,6 +27,8 @@ interface AppContextType {
     updateProfile: (body: { fullName: string, bio: string, profileImage?: string }) => Promise<void>;
     validateSignup: (credentials: { email: string, password: string, fullName: string }) => Promise<void>;
     logout: () => Promise<void>;
+    onlineUsers: string[];
+    setOnlineUsers: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -44,7 +46,7 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
 
     const [token, setToken] = useState<string | null>(getInitialToken());
     const [authUser, setAuthUser] = useState<UserData | null>(null);
-    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [socket, setSocket] = useState<Socket | null>(null);
 
     // Check if user is authenticated and if so, set the user data and connect the socket
@@ -177,7 +179,9 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
         updateProfile,
         validateSignup,
         socket,
-        setSocket
+        setSocket,
+        onlineUsers,
+        setOnlineUsers
     };
 
     return (

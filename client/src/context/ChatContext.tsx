@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { AppContext } from "./AppContext";
 import toast from "react-hot-toast";
 
-type SelectedUserType = {
+type UserType = {
     _id: string;
     email: string;
     fullName: string;
@@ -18,17 +18,22 @@ type MessageDataType = {
 };
 
 interface ChatContextType {
-    selectedUser: SelectedUserType | null;
-    setSelectedUser: React.Dispatch<React.SetStateAction<SelectedUserType | null>>;
+    selectedUser: UserType | null;
+    setSelectedUser: React.Dispatch<React.SetStateAction<UserType | null>>;
+    users: UserType[];
+    setUsers: React.Dispatch<React.SetStateAction<UserType[]>>;
+    getUsers: () => Promise<void>;
+    unseenMessages: Record<string, number>;
+    setUnseenMessages: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 };
 
-const ChatContext = createContext<ChatContextType | undefined>(undefined);
+export const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
 
     const [messages, setMessages] = useState<string[] | []>([]);
-    const [users, setUsers] = useState([]);
-    const [selectedUser, setSelectedUser] = useState<SelectedUserType | null>(null);
+    const [users, setUsers] = useState<UserType[]>([]);
+    const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
     const [unseenMessages, setUnseenMessages] = useState<Record<string, number>>({});
 
     const context = useContext(AppContext);
@@ -120,14 +125,13 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
 
     const value = {
         messages,
-        users,
+        users, setUsers,
         selectedUser, setSelectedUser,
         getUsers,
         setMessages,
         sendMessage,
         unseenMessages, setUnseenMessages,
         getMessages,
-
     };
 
     return (
