@@ -8,6 +8,7 @@ export interface UserDocument extends Document {
     bio?: string;
     createdAt: Date;
     updatedAt: Date;
+    blocked: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new mongoose.Schema({
@@ -30,6 +31,11 @@ const userSchema = new mongoose.Schema({
     },
     bio: {
         type: String
+    },
+    blocked: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "user",
+        default: []
     }
 }, { timestamps: true });
 

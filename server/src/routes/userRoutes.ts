@@ -1,5 +1,5 @@
 import express from "express";
-import { checkAuth, login, signUp, updateProfile, validateSignUp } from "../controllers/userController";
+import { blockUser, checkAuth, login, signUp, unblockUser, updateProfile, validateSignUp } from "../controllers/userController";
 import { protectRoute } from "../middleware/authUser";
 
 const router = express.Router();
@@ -9,5 +9,7 @@ router.post("/validate-signup", validateSignUp);
 router.post("/login", login);
 router.get("/check", protectRoute, checkAuth);
 router.put("/update", protectRoute, updateProfile);
+router.put("/user/block/:userId", protectRoute, blockUser);
+router.put("/user/unblock/:userId", protectRoute, unblockUser);
 
 export default router;

@@ -159,3 +159,39 @@ export const updateProfile = async (req: AuthenticatedRequest, res: Response): P
         res.status(500).json({ success: false, message: errMessage });
     }
 };
+
+export const blockUser = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const currentUserId = req.user?._id;
+        
+        const { userId } = req.params;
+
+        await userModel.findByIdAndUpdate(currentUserId, {
+            $addToSet: { blocked: userId }
+        });
+
+        res.json({ success: true, message: "User blocked" });
+
+    } catch (error) {
+        const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        res.status(500).json({ success: false, message: errMessage });
+    }
+};
+
+export const unblockUser = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const currentUserId = req.user?._id;
+
+        const { userId } = req.params;
+
+        await userModel.findByIdAndUpdate(currentUserId, {
+            $pull: { blocked: userId }
+        });
+
+        res.json({ success: true, message: "User unblocked" });
+
+    } catch (error) {
+        const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        res.status(500).json({ success: false, message: errMessage });
+    }
+};
