@@ -8,6 +8,7 @@ type UserType = {
     fullName: string;
     profileImage: string;
     bio: string;
+    blocked?: string[];
 };
 
 type MessageDataType = {

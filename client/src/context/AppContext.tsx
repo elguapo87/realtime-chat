@@ -1,9 +1,10 @@
 import axios, { AxiosError } from "axios";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 import type { AxiosStatic } from "axios";
 import toast from "react-hot-toast";
 import { io, Socket } from "socket.io-client";
+import { ChatContext } from "./ChatContext";
 
 
 type UserData = {
@@ -12,6 +13,7 @@ type UserData = {
     fullName: string;
     profileImage: string;
     bio: string;
+    blocked?: string[];
 };
 
 interface AppContextType {
@@ -29,6 +31,7 @@ interface AppContextType {
     logout: () => Promise<void>;
     onlineUsers: string[];
     setOnlineUsers: React.Dispatch<React.SetStateAction<string[]>>;
+    handleBlock: (userId: string) => Promise<void>;
 };
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -48,6 +51,13 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [authUser, setAuthUser] = useState<UserData | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [socket, setSocket] = useState<Socket | null>(null);
+
+    const [isCurrentUserBlocked, setIsCurrentUserBlocked] = useState(false);
+    const [isReceiverBlocked, setIsReceiverBlocked] = useState(false);
+
+    const context = useContext(ChatContext);
+    if (!context) throw new Error("AppContext must be within ChatContextProvider");
+    const { selectedUser } = context;
 
     // Check if user is authenticated and if so, set the user data and connect the socket
     const checkAuth = async () => {
@@ -152,6 +162,26 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
 
+    const handleBlock = async (userId: string) => {
+        try {
+            const endpoint = isReceiverBlocked ? `/api/user/unblock/${userId}` : `/api/user/block/${userId}`;
+            const { data } = await axios.put(endpoint);
+
+            if (data.success) {
+                setIsReceiverBlocked((prev) => !prev);
+                toast.success(data.message);
+
+            } else {
+                toast.error(data.message);
+            }
+
+        } catch (error) {
+            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast.error(errMessage);
+        }
+    };
+
+
     useEffect(() => {
         if (token && token !== "null" && token !== "undefined") {
             axios.defaults.headers.common["token"] = token;
@@ -167,6 +197,13 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
         };
     }, [socket]);
 
+    useEffect(() => {
+        if (authUser && selectedUser) {
+            setIsCurrentUserBlocked(selectedUser.blocked?.includes(authUser._id) ?? false);
+            setIsReceiverBlocked(authUser.blocked?.includes(selectedUser._id) ?? false);
+        }
+    }, [authUser, selectedUser]);
+
     const value = {
         axios,
         backendUrl,
@@ -181,7 +218,10 @@ const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
         socket,
         setSocket,
         onlineUsers,
-        setOnlineUsers
+        setOnlineUsers,
+        isCurrentUserBlocked,
+        isReceiverBlocked,
+        handleBlock
     };
 
     return (
