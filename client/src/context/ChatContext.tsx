@@ -31,6 +31,9 @@ interface ChatContextType {
     setUnseenMessages: React.Dispatch<React.SetStateAction<Record<string, number>>>;
     sendMessage: (messageData: Partial<MessageDataType>) => Promise<void>;
     getMessages: (userId: string) => Promise<void>;
+    isCurrentUserBlocked: boolean;
+    isReceiverBlocked: boolean;
+    handleBlock: (userId: string) => Promise<void>;
 };
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -42,9 +45,12 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
     const [unseenMessages, setUnseenMessages] = useState<Record<string, number>>({});
 
+    const [isCurrentUserBlocked, setIsCurrentUserBlocked] = useState(false);
+    const [isReceiverBlocked, setIsReceiverBlocked] = useState(false);
+
     const context = useContext(AppContext);
     if (!context) throw new Error("ChatContextProvider must be within AppContextProvider");
-    const { axios, socket } = context;
+    const { axios, socket, authUser } = context;
 
     // Function to get all users for sidebar
     const getUsers = async () => {
@@ -123,11 +129,38 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         if (socket) socket.off("newMessage");
     };
 
+    // Function to handle block / unblock user
+    const handleBlock = async (userId: string) => {
+        try {
+            const endpoint = isReceiverBlocked ? `/api/user/unblock/${userId}` : `/api/user/block/${userId}`;
+            const { data } = await axios.put(endpoint);
+            
+            if (data.success) {
+                setIsReceiverBlocked(prev => prev);
+                toast.success(data.message);
+
+            } else {
+                toast.error(data.message);
+            }
+
+        } catch (error) {
+            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast.error(errMessage);
+        }
+    };
+
 
     useEffect(() => {
         subscribeToMessages();
         return () => unsubscribeFromMessages();
     }, [socket, selectedUser]);
+
+    useEffect(() => {
+        if (authUser && selectedUser) {
+            setIsCurrentUserBlocked(selectedUser.blocked?.includes(authUser._id) ?? false);
+            setIsReceiverBlocked(authUser.blocked?.includes(selectedUser._id) ?? false);
+        }
+    }, [authUser, selectedUser]);
 
     const value = {
         messages, setMessages,
@@ -137,6 +170,9 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         sendMessage,
         unseenMessages, setUnseenMessages,
         getMessages,
+        isCurrentUserBlocked,
+        isReceiverBlocked,
+        handleBlock,
     };
 
     return (
