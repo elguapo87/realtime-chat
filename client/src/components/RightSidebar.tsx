@@ -16,7 +16,7 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
   
   const chatContext = useContext(ChatContext);
   if (!chatContext) throw new Error("RightSidebar must be within ChatContextProvider");
-  const { selectedUser, messages } = chatContext;
+  const { selectedUser, messages, handleBlock, isReceiverBlocked, isCurrentUserBlocked } = chatContext;
 
   const [msgImages, setMsgImages] = useState<string[]>([]);
 
@@ -46,6 +46,20 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
         </h1>
 
         <p className="px-10 mx-auto">{selectedUser.bio}</p>
+
+        <button onClick={() => handleBlock(selectedUser._id)} className="mt-3 bg-gradient-to-r from-red-400 to-red-500 text-white border-none text-sm font-light py-2 px-6 rounded-full cursor-pointer" disabled={isCurrentUserBlocked}>
+          {
+            isCurrentUserBlocked
+                ? 
+            "You Are Blocked"
+                :
+            isReceiverBlocked
+                ?
+            "Unblock"
+                :
+            "Block"
+          }
+        </button>
       </div>
 
       <hr className="border-[#ffffff50] my-4" />
@@ -63,7 +77,6 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
         </div>
       </div>
 
-      
       <button onClick={logout} className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-400 to-violet-600 text-white border-none text-sm font-light py-2 px-20 rounded-full cursor-pointer">Logout</button>
     </div>
   )

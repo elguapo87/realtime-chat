@@ -3,6 +3,7 @@ import userModel, { UserDocument } from '../models/userModel';
 import bcrypt from "bcryptjs";
 import { genToken } from '../lib/genToken';
 import cloudinary from '../lib/cloudinary';
+import { getIO } from '../lib/socketServer';
 
 interface AuthenticatedRequest extends Request {
     user?: UserDocument;
@@ -170,6 +171,13 @@ export const blockUser = async (req: AuthenticatedRequest, res: Response) => {
             $addToSet: { blocked: userId }
         });
 
+        // Emit socket event from server here:
+        getIO().emit("blockStatusChanged", {
+            blockerId: currentUserId,
+            blockedId: userId,
+            isBlocked: true
+        });
+
         res.json({ success: true, message: "User blocked" });
 
     } catch (error) {
@@ -188,10 +196,36 @@ export const unblockUser = async (req: AuthenticatedRequest, res: Response) => {
             $pull: { blocked: userId }
         });
 
+        // Emit socket event from server here:
+        getIO().emit("blockStatusChanged", {
+            blockerId: currentUserId,
+            blockedId: userId,
+            isBlocked: false
+        });
+
         res.json({ success: true, message: "User unblocked" });
 
     } catch (error) {
         const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
         res.status(500).json({ success: false, message: errMessage });
+    }
+};
+
+
+export const getFullBlockedStatus = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const currentUserId = req.user?._id;
+        const { userId } = req.params;
+
+        const currentUser = await userModel.findById(currentUserId).select("blocked");
+        const selectedUser = await userModel.findById(userId).select("blocked");
+
+        const isCurrentUserBlocked = selectedUser?.blocked?.includes(currentUserId);
+        const isReceiverBlocked = currentUser?.blocked?.includes(userId);
+
+        res.json({ success: true, isCurrentUserBlocked, isReceiverBlocked });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Failed to check blocked status." });
     }
 };

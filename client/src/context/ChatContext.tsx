@@ -134,9 +134,8 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             const endpoint = isReceiverBlocked ? `/api/user/unblock/${userId}` : `/api/user/block/${userId}`;
             const { data } = await axios.put(endpoint);
-            
+
             if (data.success) {
-                setIsReceiverBlocked(prev => prev);
                 toast.success(data.message);
 
             } else {
@@ -155,12 +154,49 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         return () => unsubscribeFromMessages();
     }, [socket, selectedUser]);
 
+
     useEffect(() => {
-        if (authUser && selectedUser) {
-            setIsCurrentUserBlocked(selectedUser.blocked?.includes(authUser._id) ?? false);
-            setIsReceiverBlocked(authUser.blocked?.includes(selectedUser._id) ?? false);
-        }
-    }, [authUser, selectedUser]);
+        const checkBlockStatus = async () => {
+            if (!selectedUser) return;
+
+            try {
+                const { data } = await axios.get(`/api/user/blocked-status/${selectedUser._id}`);
+                if (data.success) {
+                    setIsCurrentUserBlocked(data.isCurrentUserBlocked);
+                    setIsReceiverBlocked(data.isReceiverBlocked);
+
+                } else {
+                    toast.error(data.message);
+                }
+
+            } catch (error) {
+                const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+                toast.error(errMessage);
+            }
+        };
+
+        checkBlockStatus();
+
+    }, [selectedUser]);
+
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on("blockStatusChanged", ({ blockerId, blockedId, isBlocked }) => {
+            if (authUser?._id === blockedId && selectedUser?._id === blockerId) {
+                setIsCurrentUserBlocked(isBlocked);
+            }
+
+            if (authUser?._id === blockerId && selectedUser?._id === blockedId) {
+                setIsReceiverBlocked(isBlocked);
+            }
+        });
+
+        return () => {
+            socket.off("blockStatusChanged");
+        };
+    }, [socket, authUser, selectedUser]);
 
     const value = {
         messages, setMessages,
