@@ -4,6 +4,7 @@ import { formatMessageTime } from "../lib/utils";
 import { ChatContext } from "../context/ChatContext";
 import { AppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
+import Emoji from "./Emoji";
 
 type HomePageProps = {
   showRightSide?: boolean;
@@ -22,7 +23,7 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
 
   const scrollEnd = useRef<HTMLDivElement | null>(null);
 
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState<string>("");
 
   // Handle sending a text of message 
   const handleSendMessage = async (e: { preventDefault: () => void }) => {
@@ -130,6 +131,8 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
           <label htmlFor="image">
             <img onClick={() => { if (isCurrentUserBlocked || isReceiverBlocked) { toast.error("You can't send an image."); } }} src={assets.gallery_icon} alt="" className="w-5 mr-2 cursor-pointer" />
           </label>
+
+          <Emoji setInput={setInput} />
 
           <img onClick={handleSendMessage} src={assets.send_button} alt="" className="w-7 cursor-pointer" />
         </div>

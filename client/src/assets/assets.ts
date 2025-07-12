@@ -22,6 +22,7 @@ import pic4 from './pic4.png'
 import img1 from './img1.jpg'
 import img2 from './img2.jpg'
 import chat_image from "./chat_image.jpg";
+import emoji_icon from "./emoji.png";
 
 const assets = {
     avatar_icon,
@@ -37,7 +38,8 @@ const assets = {
     code,
     bgImage,
     profile_martin,
-    chat_image
+    chat_image,
+    emoji_icon
 }
 
 export default assets;
