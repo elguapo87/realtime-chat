@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tcs",
+    "build": "tsc",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts"
   },
