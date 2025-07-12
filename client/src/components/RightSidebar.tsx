@@ -64,9 +64,9 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
 
       <hr className="border-[#ffffff50] my-4" />
 
-      <div className="px-5 text-xs">
-        <p className="">Media</p>
-        <div className="mt-2 max-h-[200px] overflow-y-scroll grid grid-cols-2 gap-4 opacity-80">
+      <div className="px-5 text-sm">
+        <p className="max-md:text-center">Media</p>
+        <div className="mt-2 max-h-[200px] overflow-y-scroll grid grid-cols-3 md:grid-cols-2 gap-2 md:gap-4 opacity-80">
           {msgImages.map((img, index) => {
             return (
               <div onClick={() => window.open(img)} key={index} className="cursor-pointer rounded">
