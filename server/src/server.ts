@@ -42,15 +42,18 @@ app.use("/api/status", (req, res) => {
 app.use("/api/user", userRoutes);
 app.use("/api/message", messageRoutes);
 
-const PORT = process.env.PORT || 5000;
 
 // Connect to DB
 const startServer = async () => {
     try {
         await connectDB();
-        server.listen(PORT, () => {
-            console.log(`Server + Socket.IO running on PORT: ${PORT}`);
-        });
+
+        if (process.env.NODE_ENV !== "production") {
+            const PORT = process.env.PORT || 5000;
+            server.listen(PORT, () => {
+                console.log(`Server + Socket.IO running on PORT: ${PORT}`);
+            });
+        }
 
     } catch (error) {
         console.error("Database connection failed:", error);
