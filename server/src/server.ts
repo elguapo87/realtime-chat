@@ -8,6 +8,7 @@ import messageRoutes from "./routes/messageRoutes";
 import { registerSocketServer } from "./lib/socket";
 import { Server as SocketIOServer } from "socket.io";
 import { setIO } from "./lib/socketServer";
+import groupRoutes from "./routes/groupRoutes";
 
 // Create Expres app and HTTP server
 const app: Express = express();
@@ -41,6 +42,7 @@ app.use("/api/status", (req, res) => {
 // Routes
 app.use("/api/user", userRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/group", groupRoutes);
 
 const PORT = process.env.PORT || 5000;
 

@@ -16,50 +16,68 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
   
   const chatContext = useContext(ChatContext);
   if (!chatContext) throw new Error("RightSidebar must be within ChatContextProvider");
-  const { selectedUser, messages, handleBlock, isReceiverBlocked, isCurrentUserBlocked } = chatContext;
+  const { selectedUser, messages, handleBlock, isReceiverBlocked, isCurrentUserBlocked, selectedGroup } = chatContext;
 
   const [msgImages, setMsgImages] = useState<string[]>([]);
 
   // Get all images from messages and set them to state
   useEffect(() => {
-    setMsgImages(
-      messages.filter((msg) => msg.image).map((msg) => msg.image)
-    )
-  }, [messages, onlineUsers]);
+    if (selectedUser || selectedGroup) {
+      setMsgImages(messages.filter((msg) => msg.image).map((msg) => msg.image));
 
-  return selectedUser && (
+    } else {
+      setMsgImages([]);
+    }
+    
+  }, [messages, selectedUser, selectedGroup]);
+
+  if (!selectedUser && !selectedGroup) return null;
+
+  return (
     <div className={`bg-[#8185b2]/10 text-white w-full relative overflow-y-scroll max-md:hidden ${showRightSide && "block!"}`}>
       
       <img onClick={() => setShowRightSide && setShowRightSide(false)} src={assets.arrow_icon} alt="" className="absolute top-3 left-3 md:hidden max-w-7" />
 
       <div className="pt-16 flex flex-col items-center gap-2 text-xs font-light mx-auto">
-        <img src={selectedUser?.profileImage || assets.avatar_icon} alt=""  className="w-20 aspect-[1/1] rounded-full" />
+        <img src={selectedUser?.profileImage || selectedGroup?.image || assets.avatar_icon} alt=""  className="w-20 aspect-[1/1] rounded-full" />
         <h1 className="px-10 text-xl font-medium mx-auto flex items-center gap-1">
 
           {
-            onlineUsers.includes(selectedUser._id)
-              &&
-            <p className="w-2 h-2 rounded-full bg-green-500"></p>
+            selectedUser
+                ?
+            selectedUser.fullName
+                :
+            selectedGroup?.name || "Group Chat"
           }
 
-          {selectedUser.fullName}
+
+
+          {
+            selectedUser && onlineUsers.includes(selectedUser._id)
+              &&
+            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+          }
         </h1>
 
-        <p className="px-10 mx-auto">{selectedUser.bio}</p>
+        {selectedUser && <p className="px-10 mx-auto">{selectedUser.bio}</p>}
 
-        <button onClick={() => handleBlock(selectedUser._id)} className="mt-3 bg-gradient-to-r from-red-400 to-red-500 text-white border-none text-sm font-light py-2 px-6 rounded-full cursor-pointer" disabled={isCurrentUserBlocked}>
-          {
-            isCurrentUserBlocked
-                ? 
-            "You Are Blocked"
-                :
-            isReceiverBlocked
-                ?
-            "Unblock"
-                :
-            "Block"
-          }
-        </button>
+        {
+          selectedUser
+              &&
+          <button onClick={() => handleBlock(selectedUser._id)} className="mt-3 bg-gradient-to-r from-red-400 to-red-500 text-white border-none text-sm font-light py-2 px-6 rounded-full cursor-pointer" disabled={isCurrentUserBlocked}>
+            {
+              isCurrentUserBlocked
+                  ? 
+              "You Are Blocked"
+                  :
+              isReceiverBlocked
+                  ?
+              "Unblock"
+                  :
+              "Block"
+            }
+          </button>
+        }
       </div>
 
       <hr className="border-[#ffffff50] my-4" />

@@ -19,7 +19,7 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
 
   const chatContext = useContext(ChatContext);
   if (!chatContext) throw new Error("ChatContainer must be within ChatContextProvider");
-  const { selectedUser, setSelectedUser, messages, getMessages, sendMessage, isCurrentUserBlocked, isReceiverBlocked } = chatContext;
+  const { selectedUser, setSelectedUser, messages, getMessages, sendMessage, isCurrentUserBlocked, isReceiverBlocked, selectedGroup, setSelectedGroup, getGroupMessages, sendGroupMessage } = chatContext;
 
   const scrollEnd = useRef<HTMLDivElement | null>(null);
 
@@ -30,7 +30,13 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
     e.preventDefault();
     if (input.trim() === "") return null;
 
-    await sendMessage({ text: input.trim() });
+    if (selectedUser) {
+      await sendMessage({ text: input.trim() });
+
+    } else {
+      await sendGroupMessage({ text: input.trim() });
+    }
+
     setInput("");
   };
 
@@ -47,7 +53,12 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       if (typeof reader.result === "string") {
-        await sendMessage({ image: reader.result });
+        if (selectedUser) {
+          await sendMessage({ image: reader.result });
+
+        } else if (selectedGroup) {
+          await sendGroupMessage({ image: reader.result });
+        }
 
       } else {
         toast.error("Failed to read image file");
@@ -67,11 +78,16 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
     handleSendImage(e);
   };
 
+  const currentMessages = selectedUser ? messages : (selectedGroup ? messages : []);
+
   useEffect(() => {
     if (selectedUser) {
       getMessages(selectedUser._id);
+       
+    } else if (selectedGroup) {
+      getGroupMessages(selectedGroup._id);
     }
-  }, [selectedUser]);
+  }, [selectedUser, selectedGroup]);
 
   useEffect(() => {
     if (scrollEnd.current && messages) {
@@ -79,29 +95,33 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
     }
   }, [messages]);
 
-  return selectedUser && !showRightSide ? (
+  return (selectedUser || selectedGroup) && !showRightSide ? (
     <div className="h-full overflow-scroll relative backdrop-blur-lg">
       {/* HEADER */}
       <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500">
-        <img src={selectedUser.profileImage || assets.avatar_icon} alt="" className="w-8 rounded-full" />
+        <img src={selectedUser?.profileImage || selectedGroup?.image || assets.avatar_icon} alt="" className="w-8 h-8 aspect-square rounded-full" />
 
         <p className="flex-1 text-lg text-white flex items-center gap-2">
-          {selectedUser.fullName}
+          {selectedUser?.fullName || selectedGroup?.name}
 
           {
-            onlineUsers.includes(selectedUser._id)
+            selectedUser && onlineUsers.includes(selectedUser._id)
                   &&
             <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  || 
+            selectedGroup
+                  &&
+            <span className="bg-purple-500 text-white text-xs ml-3 rounded px-0.75">Group</span>
           }
         </p>
 
-        <img onClick={() => { setSelectedUser(null) }} src={assets.arrow_icon} alt="" className="md:hidden max-w-7" />
+        <img onClick={() => { setSelectedUser(null); setSelectedGroup(null); }} src={assets.arrow_icon} alt="" className="md:hidden max-w-7" />
         <img onClick={() => setShowRightSide?.(true)} src={assets.arrow_icon} alt="" className="md:hidden rotate-180 max-w-7" />
       </div>
 
       {/* CHAT AREA */}
       <div className="flex flex-col md:gap-5 h-[calc(100%-120px)] overflow-y-scroll p-3 pb-6">
-        {messages.map((msg, index) => (
+        {currentMessages.map((msg, index) => (
           <div key={index} className={`flex items-center gap-2 justify-end ${msg?.senderId !== authUser?._id && "flex-row-reverse"}`}>
             {
               msg?.image
@@ -114,7 +134,7 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
             }
 
             <div className="text-center text-xs self-end">
-              <img src={msg?.senderId === authUser?._id ? authUser?.profileImage || assets.avatar_icon : selectedUser.profileImage || assets.avatar_icon} alt="" className="w-7 rounded-full" />
+              <img src={msg?.senderId === authUser?._id ? authUser?.profileImage || assets.avatar_icon : selectedUser?.profileImage || assets.avatar_icon} alt="" className="w-7 aspect-square rounded-full" />
               <p className="text-stone-200">{formatMessageTime(msg?.createdAt)}</p>
             </div>
           </div>
