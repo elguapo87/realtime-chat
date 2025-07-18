@@ -4,8 +4,6 @@ import cloudinary from "../lib/cloudinary";
 import groupModel from "../models/groupModel";
 import groupMessageModel from "../models/groupMessageModel";
 import { getIO } from "../lib/socketServer";
-import { userSocketMap } from "../lib/socket";
-import { strict } from "assert";
 
 interface AuthenticatedRequest extends Request {
     user?: UserDocument;

@@ -65,7 +65,6 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
           }
 
 
-
           {
             selectedUser && onlineUsers.includes(selectedUser._id)
               &&

@@ -301,11 +301,7 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         const handleGroupMessage = (newGroupMessage: MessageDataType) => {
             if (selectedGroup && newGroupMessage.groupId === selectedGroup._id) {
                 setMessages(prev => [...prev, newGroupMessage]);
-            } else {
-                setUnseenMessages(prev => ({
-                    ...prev,
-                    [newGroupMessage.groupId!]: (prev[newGroupMessage.groupId!] || 0) + 1,
-                }));
+                axios.post(`/api/group/mark/${newGroupMessage._id}`);
             }
         };
 
@@ -318,7 +314,27 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     useEffect(() => {
-        const checkBlockStatus = async () => { /* unchanged */ };
+        const checkBlockStatus = async () => {
+            if (!selectedUser?._id) {
+                setIsCurrentUserBlocked(false);
+                setIsReceiverBlocked(false);
+                return;
+            }
+
+            try {
+                const { data } = await axios.get(`/api/user/blocked-status/${selectedUser._id}`);
+                if (data.success) {
+                    setIsCurrentUserBlocked(data.isCurrentUserBlocked);
+                    setIsReceiverBlocked(data.isReceiverBlocked);
+                } else {
+                    toast.error(data.message);
+                }
+            } catch (error) {
+                const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+                toast.error(errMessage);
+            }
+        };
+
         checkBlockStatus();
     }, [selectedUser]);
 
@@ -375,7 +391,7 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         selectedGroup, setSelectedGroup,
         getGroupMessages,
         sendGroupMessage,
-        groupMembers, 
+        groupMembers,
         setGroupMembers,
         getAllUsersOfGroup
     };

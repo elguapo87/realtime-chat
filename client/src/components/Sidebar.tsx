@@ -70,6 +70,7 @@ const Sidebar = () => {
               <p>{group.name}</p>
 
               <span className="bg-purple-500 text-white text-xs ml-3 rounded px-0.75">Group</span>
+              
             </div>
           ))}
 
