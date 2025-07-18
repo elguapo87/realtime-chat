@@ -114,3 +114,20 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
+
+export const getAllUsersInGroup = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+
+        const groupUsers = await groupModel.find({}).select("members").populate("members", "fullName profileImage");
+
+        const allMembers = groupUsers.flatMap(group => group.members);
+
+        res.json({ success: true, members: allMembers });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};

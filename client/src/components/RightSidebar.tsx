@@ -12,13 +12,27 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
 
   const appContext = useContext(AppContext);
   if (!appContext) throw new Error("RightSidebar must be within AppContextProvider");
-  const { logout, onlineUsers } = appContext;
+  const { logout, onlineUsers, authUser } = appContext;
   
   const chatContext = useContext(ChatContext);
   if (!chatContext) throw new Error("RightSidebar must be within ChatContextProvider");
-  const { selectedUser, messages, handleBlock, isReceiverBlocked, isCurrentUserBlocked, selectedGroup } = chatContext;
+  const { selectedUser, messages, handleBlock, isReceiverBlocked, isCurrentUserBlocked, selectedGroup, getAllUsersOfGroup, groupMembers } = chatContext;
 
   const [msgImages, setMsgImages] = useState<string[]>([]);
+
+  const [showAllMembers, setShowAllMembers] = useState(false);
+
+  const sortedMembers = groupMembers.slice().sort((a, b) => (a._id === authUser?._id ? -1 : b._id === authUser?._id ? 1 : 0));
+
+  const maxVisible = 5;
+  const visibleMembers = sortedMembers.slice(0, maxVisible);
+  const remainingCount = sortedMembers.length - maxVisible;
+
+  useEffect(() => {
+    if (selectedGroup) {
+      getAllUsersOfGroup();
+    }
+  }, [selectedGroup]);
 
   // Get all images from messages and set them to state
   useEffect(() => {
@@ -38,7 +52,7 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
       
       <img onClick={() => setShowRightSide && setShowRightSide(false)} src={assets.arrow_icon} alt="" className="absolute top-3 left-3 md:hidden max-w-7" />
 
-      <div className="pt-16 flex flex-col items-center gap-2 text-xs font-light mx-auto">
+      <div className={`flex flex-col items-center gap-2 text-xs font-light mx-auto ${!selectedGroup ? "pt-16" : "pt-4"}`}>
         <img src={selectedUser?.profileImage || selectedGroup?.image || assets.avatar_icon} alt=""  className="w-20 aspect-[1/1] rounded-full" />
         <h1 className="px-10 text-xl font-medium mx-auto flex items-center gap-1">
 
@@ -77,6 +91,48 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
               "Block"
             }
           </button>
+        }
+
+        {
+          selectedGroup
+              &&
+          <div>
+            {visibleMembers.map((member) => (
+              <div key={member._id}>
+                <p>
+                  {member.fullName}
+                  {member._id === authUser?._id && " (You)"}
+                </p>
+              </div>
+            ))}
+
+            {
+              remainingCount > 0
+                &&
+              <button onClick={() => setShowAllMembers(true)} className="text-xs text-purple-400 underline">
+                + {remainingCount} more...
+              </button>
+            }
+
+            {
+              showAllMembers
+                 &&
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white p-5 rounded-lg max-h-[80vh] overflow-y-auto text-gray-800">
+                  <h2 className="text-lg font-semibold mb-4">Group Members</h2>
+                  {sortedMembers.map((member) => (
+                    <div key={member._id} className="mb-2 text-sm">
+                      {member.fullName}
+                      {member._id === authUser?._id && " (You)"}
+                    </div>
+                  ))}
+                  <button onClick={() => setShowAllMembers(false)} className="mt-4 bg-purple-500 text-white px-4 py-2 rounded">
+                    Close
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
         }
       </div>
 

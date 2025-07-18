@@ -29,6 +29,12 @@ type GroupType = {
     createdBy: string;
 };
 
+type GroupMembers = {
+    _id: string;
+    fullName: string;
+    profileImage: string;
+};
+
 interface ChatContextType {
     messages: MessageDataType[];
     setMessages: React.Dispatch<React.SetStateAction<MessageDataType[]>>;
@@ -52,6 +58,9 @@ interface ChatContextType {
     setSelectedGroup: React.Dispatch<React.SetStateAction<GroupType | null>>;
     getGroupMessages: (groupId: string) => Promise<void>;
     sendGroupMessage: (messageData: Partial<MessageDataType>) => Promise<void>;
+    groupMembers: GroupMembers[];
+    setGroupMembers: React.Dispatch<React.SetStateAction<GroupMembers[]>>;
+    getAllUsersOfGroup: () => Promise<void>;
 };
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -67,7 +76,9 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [isReceiverBlocked, setIsReceiverBlocked] = useState(false);
 
     const [groups, setGroups] = useState<GroupType[]>([]);
-    const [selectedGroup, setSelectedGroup] = useState<GroupType | null>(null)
+    const [selectedGroup, setSelectedGroup] = useState<GroupType | null>(null);
+
+    const [groupMembers, setGroupMembers] = useState<GroupMembers[]>([]);
 
     const context = useContext(AppContext);
     if (!context) throw new Error("ChatContextProvider must be within AppContextProvider");
@@ -228,6 +239,23 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    // Function to get all users of group
+    const getAllUsersOfGroup = async () => {
+        try {
+            const { data } = await axios.get("/api/group/users");
+            if (data.success) {
+                setGroupMembers(data.members);
+
+            } else {
+                toast.error(data.message);
+            }
+
+        } catch (error) {
+            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast.error(errMessage);
+        }
+    };
+
 
     useEffect(() => {
         if (!socket) return;
@@ -346,7 +374,10 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         getUserGroups,
         selectedGroup, setSelectedGroup,
         getGroupMessages,
-        sendGroupMessage
+        sendGroupMessage,
+        groupMembers, 
+        setGroupMembers,
+        getAllUsersOfGroup
     };
 
     return (
