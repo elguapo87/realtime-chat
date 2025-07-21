@@ -136,11 +136,9 @@ export const updateGroup = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const userId = req.user?._id as string;
         const { groupId } = req.params;
-
         const { name, members, image } = req.body;
 
         let imageUrl = "";
-
         if (image) {
             const uploadRes = await cloudinary.uploader.upload(image, {
                 folder: "realtime_chat"
@@ -148,20 +146,35 @@ export const updateGroup = async (req: AuthenticatedRequest, res: Response) => {
             imageUrl = uploadRes.secure_url;
         }
 
-
         const updateData: any = {};
+        let newlyAddedMembers: string[] = [];
+
         if (name) updateData.name = name;
         if (image) updateData.image = imageUrl;
+
         if (members) {
             const group = await groupModel.findById(groupId).select("members");
             const existingMembers = group?.members.map((id: string) => id.toString()) || [];
 
-            const mergedMembers = [...new Set([...existingMembers, ...members.map((id: string) => id), userId.toString()])];
+            const incomingMembers = members.map((id: string) => id.toString());
+            const mergedMembers = [...new Set([...existingMembers, ...incomingMembers, userId.toString()])];
 
             updateData.members = mergedMembers;
+
+            // 🔥 Identify new users that were not in the original list
+            newlyAddedMembers = mergedMembers.filter(id => !existingMembers.includes(id));
         }
 
         const updatedGroup = await groupModel.findByIdAndUpdate(groupId, updateData, { new: true });
+
+        // 🔄 Emit to existing group members
+        getIO().to(groupId).emit("groupUpdated", updatedGroup);
+
+        // 🔥 Emit to newly added members individually
+        for (const memberId of newlyAddedMembers) {
+            const io = getIO();
+            io.to(memberId).emit("groupCreated", updatedGroup); // Reuse groupCreated event logic
+        }
 
         res.json({
             success: true,
@@ -172,5 +185,26 @@ export const updateGroup = async (req: AuthenticatedRequest, res: Response) => {
     } catch (error) {
         console.error("Update group error:", error);
         res.status(500).json({ success: false, message: "Failed to update group." });
+    }
+};
+
+
+
+export const leaveGroup = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const userId = req.user?._id;
+        const { groupId } = req.params;
+        
+        await groupModel.findByIdAndUpdate(groupId, {
+            $pull: {
+                members: userId 
+            }
+        });
+
+        res.json({ success: true, message: "You left group" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
     }
 };

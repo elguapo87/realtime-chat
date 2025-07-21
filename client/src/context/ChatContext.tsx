@@ -384,6 +384,9 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
                 if (prev.some(group => group._id === newGroup._id)) return prev;
                 return [...prev, newGroup];
             });
+
+            // Join group socket room so we can receive messages and updates
+            socket.emit("joinGroup", newGroup._id);
         };
 
         socket.on("groupCreated", handleGroupCreated);
