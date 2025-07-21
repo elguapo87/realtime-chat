@@ -13,7 +13,7 @@ const UpdateGroup = () => {
 
     const chatContext = useContext(ChatContext);
     if (!chatContext) throw new Error("UpdateGroup must be within ChatContextProvider");
-    const { users, createGroup, selectedGroup, updateGroup } = chatContext;
+    const { users, selectedGroup, updateGroup } = chatContext;
 
     // console.log(selectedGroup);
 
@@ -114,12 +114,17 @@ const UpdateGroup = () => {
 
                     <div className='overflow-y-scroll h-[25%] md:max-h-[30%]'>
                     {sortedCurrentGroupMembers.map((user) => (
-                        <div key={user._id} className='flex items-center gap-2 md:gap-3 p-2 pl-4 rounded max-sm:text-sm'>
-                            <img src={user.profileImage || assets.avatar_icon} alt="" className="w-[35px] aspect-1/1 rounded-full" />
-                            <p className='leading-5 text-white'>
-                                {user.fullName}
-                                {user._id === authUser?._id && " (You)"}
-                            </p>
+                        <div key={user._id} className='flex items-center justify-between md:gap-3 p-2 pl-4 rounded max-sm:text-sm'>
+                            <div className='flex items-center gap-2 md:gap-3'>
+                                <img src={user.profileImage || assets.avatar_icon} alt="" className="w-[35px] aspect-1/1 rounded-full" />
+
+                                <p className='leading-5 text-white'>
+                                    {user.fullName}
+                                    {user._id === authUser?._id && " (You)"}
+                                </p>
+                            </div>
+                            {user._id === authUser?._id && <div className='bg-red-500 text-white px-2 py-0.5 text-xs md:text-sm rounded mr-2 cursor-pointer'>Leave Group</div>}
+                            
                         </div>
                     ))}
 
