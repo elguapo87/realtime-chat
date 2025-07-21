@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast"
 import { useContext } from "react"
 import { AppContext } from "./context/AppContext"
 import Group from "./components/Group"
+import UpdateGroup from "./components/UpdateGroup"
 
 const App = () => {
 
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path="/group" element={authUser ? <Group /> : <Navigate to="/login" />} />
+        <Route path="/update/:id" element={authUser ? <UpdateGroup /> : <Navigate to="/login" />} />
       </Routes>
     </div>
   )

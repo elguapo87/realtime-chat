@@ -61,6 +61,7 @@ interface ChatContextType {
     groupMembers: GroupMembers[];
     setGroupMembers: React.Dispatch<React.SetStateAction<GroupMembers[]>>;
     getAllUsersOfGroup: () => Promise<void>;
+    updateGroup: (groupId: string, groupData: { name?: string, members?: string[], image?: string }) => Promise<void>;
 };
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -256,6 +257,25 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    // Function to update group
+    const updateGroup = async (groupId: string, groupData: { name?: string, members?: string[], image?: string }) => {
+        try {
+            const { data } = await axios.post(`/api/group/update/${groupId}`, groupData);
+
+            if (data.success) {
+                setGroups(prev => prev.map(group => group._id === data.updatedGroup._id ? data.updatedGroup : group));
+                toast.success(data.message);
+                await getAllUsersOfGroup();
+
+            } else {
+                toast.error(data.message);
+            }
+
+        } catch (error) {
+            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast.error(errMessage);
+        }
+    };
 
     useEffect(() => {
         if (!socket) return;
@@ -393,7 +413,8 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         sendGroupMessage,
         groupMembers,
         setGroupMembers,
-        getAllUsersOfGroup
+        getAllUsersOfGroup,
+        updateGroup
     };
 
     return (

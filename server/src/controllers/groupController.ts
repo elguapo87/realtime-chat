@@ -40,6 +40,7 @@ export const createGroup = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
+
 export const getUserGroups = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const userId = req.user?._id;
@@ -127,5 +128,49 @@ export const getAllUsersInGroup = async (req: AuthenticatedRequest, res: Respons
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+
+export const updateGroup = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const userId = req.user?._id as string;
+        const { groupId } = req.params;
+
+        const { name, members, image } = req.body;
+
+        let imageUrl = "";
+
+        if (image) {
+            const uploadRes = await cloudinary.uploader.upload(image, {
+                folder: "realtime_chat"
+            });
+            imageUrl = uploadRes.secure_url;
+        }
+
+
+        const updateData: any = {};
+        if (name) updateData.name = name;
+        if (image) updateData.image = imageUrl;
+        if (members) {
+            const group = await groupModel.findById(groupId).select("members");
+            const existingMembers = group?.members.map((id: string) => id.toString()) || [];
+
+            const mergedMembers = [...new Set([...existingMembers, ...members.map((id: string) => id), userId.toString()])];
+
+            updateData.members = mergedMembers;
+        }
+
+        const updatedGroup = await groupModel.findByIdAndUpdate(groupId, updateData, { new: true });
+
+        res.json({
+            success: true,
+            updatedGroup,
+            message: "Group updated"
+        });
+
+    } catch (error) {
+        console.error("Update group error:", error);
+        res.status(500).json({ success: false, message: "Failed to update group." });
     }
 };

@@ -70,6 +70,8 @@ const Sidebar = () => {
               <p>{group.name}</p>
 
               <span className="bg-purple-500 text-white text-xs ml-3 rounded px-0.75">Group</span>
+
+              <div onClick={() => navigate(`/update/${group._id}`)} className="ml-5 text-xs uppercase bg-blue-600 text-white rounded py-0.5 px-2">Edit</div>
               
             </div>
           ))}
