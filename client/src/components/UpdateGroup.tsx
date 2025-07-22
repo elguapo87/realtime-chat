@@ -174,7 +174,7 @@ const UpdateGroup = () => {
                     <button type='submit' className='absolute max-md:mx-3 bottom-2 left-0 md:bottom-2 md:left-2 max-md:w-[95%] bg-gradient-to-r from-purple-400 to-violet-600 text-white border-none text-sm font-light py-2 px-30 rounded-full cursor-pointer'>Update</button>
                 </div>
 
-                <div className='flex-1 self-center transform translate-x-[20%] max-md:hidden'>
+                <div className='flex-1 self-center transform translate-x-[10%] max-md:hidden'>
                     <div className=''>
                         <img src={assets.logo_big} alt="" className='' />
                     </div>
