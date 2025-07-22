@@ -189,17 +189,26 @@ export const updateGroup = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 
-
 export const leaveGroup = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const userId = req.user?._id;
         const { groupId } = req.params;
-        
+
         await groupModel.findByIdAndUpdate(groupId, {
             $pull: {
-                members: userId 
+                members: userId
             }
         });
+
+        // Fetch the updated group to get new member list
+        const updatedGroup = await groupModel.findById(groupId);
+
+        // Emit groupUpdated to all remaining members
+        if (updatedGroup) {
+            updatedGroup.members.forEach((memberId: string) => {
+                getIO().to(memberId.toString()).emit("groupUpdated", updatedGroup);
+            });
+        }
 
         res.json({ success: true, message: "You left group" });
 

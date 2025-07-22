@@ -62,6 +62,7 @@ interface ChatContextType {
     setGroupMembers: React.Dispatch<React.SetStateAction<GroupMembers[]>>;
     getAllUsersOfGroup: () => Promise<void>;
     updateGroup: (groupId: string, groupData: { name?: string, members?: string[], image?: string }) => Promise<void>;
+    leaveGroup: (groupId: string) => Promise<void>;
 };
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -277,6 +278,29 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+
+    // Function for user leave group
+    const leaveGroup = async (groupId: string) => {
+        try {
+            const { data } = await axios.post(`/api/group/leave/${groupId}`);
+
+            if (data.success) {
+                socket?.emit("leaveGroup", groupId);
+                setSelectedGroup(null);
+                setGroups(prev => prev.filter(g => g._id !== groupId));
+                setMessages([]);
+                toast.success(data.message);
+
+            } else {
+                toast.error(data.message)
+            }
+
+        } catch (error) {
+            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast.error(errMessage);
+        }
+    };
+
     useEffect(() => {
         if (!socket) return;
         if (selectedGroup?._id) {
@@ -397,6 +421,31 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
     }, [socket]);
 
 
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleGroupUpdated = (updatedGroup: GroupType) => {
+            setGroups(prev => 
+                prev.map(group => 
+                    group._id === updatedGroup._id ? updatedGroup : group
+                )
+            );
+
+            // Optional: if the updated group is selected, refresh its member list
+            if (selectedGroup?._id === updatedGroup._id) {
+                setSelectedGroup(updatedGroup);
+                getAllUsersOfGroup();
+            }
+        };
+
+        socket.on("groupUpdated", handleGroupUpdated);
+
+        return () => {
+            socket.off("groupUpdated", handleGroupUpdated);
+        };
+    }, [socket, selectedGroup]);
+
+
     const value = {
         messages, setMessages,
         users, setUsers,
@@ -417,7 +466,8 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         groupMembers,
         setGroupMembers,
         getAllUsersOfGroup,
-        updateGroup
+        updateGroup,
+        leaveGroup
     };
 
     return (

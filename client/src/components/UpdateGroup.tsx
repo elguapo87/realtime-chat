@@ -13,7 +13,7 @@ const UpdateGroup = () => {
 
     const chatContext = useContext(ChatContext);
     if (!chatContext) throw new Error("UpdateGroup must be within ChatContextProvider");
-    const { users, selectedGroup, updateGroup } = chatContext;
+    const { users, selectedGroup, updateGroup, leaveGroup } = chatContext;
 
     // console.log(selectedGroup);
 
@@ -79,6 +79,23 @@ const UpdateGroup = () => {
         }
     };
 
+
+    const handleLeaveGroup = async () => {
+        try {
+            if (!selectedGroup?._id) {
+                toast.error("No group selected to leave.");
+                return;
+            }
+
+            await leaveGroup(selectedGroup._id);
+            navigate("/");
+
+        } catch (error) {
+            toast.error("Failed to leave group.");
+            console.error(error);
+        }
+    };
+
     useEffect(() => {
         if (selectedGroup) {
             setGroupName(selectedGroup.name);
@@ -123,7 +140,7 @@ const UpdateGroup = () => {
                                     {user._id === authUser?._id && " (You)"}
                                 </p>
                             </div>
-                            {user._id === authUser?._id && <div className='bg-red-500 text-white px-2 py-0.5 text-xs md:text-sm rounded mr-2 cursor-pointer'>Leave Group</div>}
+                            {user._id === authUser?._id && <div onClick={handleLeaveGroup} className='bg-red-500 text-white px-2 py-0.5 text-xs md:text-sm rounded mr-2 cursor-pointer'>Leave Group</div>}
                             
                         </div>
                     ))}
