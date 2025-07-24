@@ -16,6 +16,8 @@ const Sidebar = () => {
 
   const [input, setInput] = useState("");
 
+  const [showMenu, setShowMenu] = useState(false);
+
   const navigate = useNavigate();
 
   const filteredUsers = input ? users.filter((user) => user.fullName.toLowerCase().includes(input.toLowerCase())) : users;
@@ -43,15 +45,20 @@ const Sidebar = () => {
         <div className="flex justify-between items-center">
           <img src={assets.logo} alt="Logo" className="max-w-40" />
 
-          <div className="relative py-2 group">
-            <img src={assets.menu_icon} alt="Menu" className="max-h-5 cursor-pointer" />
+          <div className="relative py-2">
+            <img onClick={() => setShowMenu(prev => !prev)} src={assets.menu_icon} alt="Menu" className="max-h-5 cursor-pointer" />
 
-            <div className="absolute top-8 right-0 z-20 w-32 p-5 rounded-md bg-[#282142] border border-gray-600 text-gray-100 hidden group-hover:block">
-              <p onClick={() => navigate("/group")} className="cursor-pointer text-sm mb-3">Add Group +</p>
-              <p onClick={() => navigate("/profile")} className="cursor-pointer text-sm">Edit Profile</p>
-              <hr className="my-2 border-t border-gray-500" />
-              <p onClick={logout} className="cursor-pointer text-sm">Logout</p>
-            </div>
+            {
+              showMenu
+                 &&
+              <div className="absolute top-8 right-0 z-20 w-32 p-5 rounded-md bg-[#282142] border border-gray-600 text-gray-100">
+                <p onClick={() => { navigate("/group"); setShowMenu(false); }} className="cursor-pointer text-sm mb-3">Add Group +</p>
+                <p onClick={() => { navigate("/profile"); setShowMenu(false); }} className="cursor-pointer text-sm">Edit Profile</p>
+                <hr className="my-2 border-t border-gray-500" />
+                <p onClick={() => { logout(); setShowMenu(false); }} className="cursor-pointer text-sm">Logout</p>
+              </div>
+            }
+
           </div>
         </div>
 
