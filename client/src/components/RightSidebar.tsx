@@ -54,7 +54,7 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
 
       <div className={`flex flex-col items-center gap-2 text-xs font-light mx-auto ${!selectedGroup ? "pt-16" : "pt-4"}`}>
         <img src={selectedUser?.profileImage || selectedGroup?.image || assets.avatar_icon} alt=""  className="w-20 aspect-[1/1] rounded-full" />
-        <h1 className="px-10 text-xl font-medium mx-auto flex items-center gap-1">
+        <h1 className={`px-10 text-xl font-medium mx-auto flex items-center ${selectedUser ? "gap-1.5" : "gap-1"}`}>
 
           {
             selectedUser
@@ -66,9 +66,13 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
 
 
           {
-            selectedUser && onlineUsers.includes(selectedUser._id)
-              &&
-            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+            selectedUser ? (
+              onlineUsers.includes(selectedUser._id)
+                ? <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                : <span className="border border-gray-500 text-gray-400 px-[4px] py-[0.75px] text-[10px] rounded-full">Offline</span>
+            ) : selectedGroup ? (
+              <span className="bg-purple-500 text-white text-xs ml-3 rounded px-0.75">Group</span>
+            ) : null
           }
         </h1>
 

@@ -105,14 +105,15 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
           {selectedUser?.fullName || selectedGroup?.name}
 
           {
-            selectedUser && onlineUsers.includes(selectedUser._id)
-                  &&
-            <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  || 
-            selectedGroup
-                  &&
-            <span className="bg-purple-500 text-white text-xs ml-3 rounded px-0.75">Group</span>
+            selectedUser ? (
+              onlineUsers.includes(selectedUser._id)
+                ? <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                : <span className="border border-gray-500 text-gray-400 px-1.5 py-[1px] text-xs rounded-full">Offline</span>
+            ) : selectedGroup ? (
+              <span className="bg-purple-500 text-white text-xs ml-3 rounded px-0.75">Group</span>
+            ) : null
           }
+          
         </p>
 
         <img onClick={() => { setSelectedUser(null); setSelectedGroup(null); }} src={assets.arrow_icon} alt="" className="md:hidden max-w-7" />
