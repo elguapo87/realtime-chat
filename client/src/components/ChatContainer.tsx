@@ -129,13 +129,13 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
                 ?
               <img onClick={() => window.open(msg?.image)} src={msg.image} alt="" className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-8 cursor-pointer" />
                 :
-              <p className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all text-white ${msg?.senderId === authUser?._id ? "rounded-br-none bg-violet-500/30" : "rounded-bl-none bg-violet-500/80"}`}>
+              <p className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-words text-white ${msg?.senderId === authUser?._id ? "rounded-br-none bg-violet-500/30" : "rounded-bl-none bg-violet-500/80"}`}>
                 {msg?.text}
               </p>
             }
 
-            <div className="text-center text-xs self-end">
-              <img src={msg?.senderId === authUser?._id ? authUser?.profileImage || assets.avatar_icon : selectedUser?.profileImage || assets.avatar_icon} alt="" className="w-7 aspect-square rounded-full" />
+            <div className="text-center text-xs self-end flex flex-col gap-1">
+              <img src={msg?.senderId === authUser?._id ? authUser?.profileImage || assets.avatar_icon : selectedUser?.profileImage || assets.avatar_icon} alt="" className={`w-8 md:w-10 aspect-square rounded-full`} />
               <p className="text-stone-200">{formatMessageTime(msg?.createdAt)}</p>
             </div>
           </div>

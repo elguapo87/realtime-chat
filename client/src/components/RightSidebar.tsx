@@ -81,7 +81,7 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
         {
           selectedUser
               &&
-          <button onClick={() => handleBlock(selectedUser._id)} className="mt-3 bg-gradient-to-r from-red-400 to-red-500 text-white border-none text-sm font-light py-2 px-6 rounded-full cursor-pointer" disabled={isCurrentUserBlocked}>
+          <button onClick={() => handleBlock(selectedUser._id)} className={`mt-3 bg-gradient-to-r from-red-400 to-red-500 text-white border-none text-sm font-light py-2 px-6 rounded-full ${!isCurrentUserBlocked && "cursor-pointer"}`} disabled={isCurrentUserBlocked}>
             {
               isCurrentUserBlocked
                   ? 
