@@ -40,13 +40,13 @@ const Sidebar = () => {
   }, [onlineUsers]);
 
   return (
-    <div className={`bg-[#8185b2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white ${selectedUser || selectedGroup ? "max-md:hidden" : ""}`}>
+    <div onClick={() => setShowMenu(false)} className={`bg-[#8185b2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white ${selectedUser || selectedGroup ? "max-md:hidden" : ""}`}>
       <div className="pb-5">
         <div className="flex justify-between items-center">
           <img src={assets.logo} alt="Logo" className="max-w-40" />
 
           <div className="relative py-2">
-            <img onClick={() => setShowMenu(prev => !prev)} src={assets.menu_icon} alt="Menu" className="max-h-5 cursor-pointer" />
+            <img onClick={(e) => { e.stopPropagation(); setShowMenu(prev => !prev); }} src={assets.menu_icon} alt="Menu" className="max-h-5 cursor-pointer" />
 
             {
               showMenu
