@@ -7,6 +7,7 @@ import { useContext } from "react"
 import { AppContext } from "./context/AppContext"
 import Group from "./components/Group"
 import UpdateGroup from "./components/UpdateGroup"
+import Help from "./components/Help"
 
 const App = () => {
 
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path="/group" element={authUser ? <Group /> : <Navigate to="/login" />} />
         <Route path="/update/:id" element={authUser ? <UpdateGroup /> : <Navigate to="/login" />} />
+        <Route path="/help" element={authUser ? <Help /> : <Navigate to="/" />} />
       </Routes>
     </div>
   )

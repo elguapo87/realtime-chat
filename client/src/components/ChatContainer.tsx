@@ -129,7 +129,7 @@ const ChatContainer = ({ showRightSide, setShowRightSide }: HomePageProps) => {
                 ?
               <img onClick={() => window.open(msg?.image)} src={msg.image} alt="" className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-8 cursor-pointer" />
                 :
-              <p className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-words text-white ${msg?.senderId === authUser?._id ? "rounded-br-none bg-violet-500/30" : "rounded-bl-none bg-violet-500/80"}`}>
+              <p className={`p-2 w-fit max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-words text-white ${msg?.senderId === authUser?._id ? "rounded-br-none bg-violet-500/30" : "rounded-bl-none bg-violet-500/80"}`}>
                 {msg?.text}
               </p>
             }
