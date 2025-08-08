@@ -28,6 +28,8 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
   const visibleMembers = sortedMembers.slice(0, maxVisible);
   const remainingCount = sortedMembers.length - maxVisible;
 
+  const groupAdmin = groupMembers.find((member) => member._id === selectedGroup?.createdBy);
+
   useEffect(() => {
     if (selectedGroup) {
       getAllUsersOfGroup();
@@ -52,9 +54,9 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
       
       <img onClick={() => setShowRightSide && setShowRightSide(false)} src={assets.arrow_icon} alt="" className="absolute top-3 left-3 md:hidden max-w-7" />
 
-      <div className={`flex flex-col items-center gap-2 text-xs font-light mx-auto ${!selectedGroup ? "pt-16" : "pt-4"}`}>
+      <div className={`flex flex-col items-center text-xs font-light mx-auto ${!selectedGroup ? "pt-16" : "pt-4"} ${selectedUser && "gap-2"}`}>
         <img src={selectedUser?.profileImage || selectedGroup?.image || assets.avatar_icon} alt=""  className="w-20 aspect-[1/1] rounded-full" />
-        <h1 className={`px-10 text-xl font-medium mx-auto flex items-center ${selectedUser ? "gap-1.5" : "gap-1"}`}>
+        <h1 className={`px-10 text-xl font-medium mx-auto flex items-center ${selectedUser ? "gap-1.5" : "gap-1"} ${selectedGroup && "mt-2"}`}>
 
           {
             selectedUser
@@ -63,7 +65,6 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
                 :
             selectedGroup?.name || "Group Chat"
           }
-
 
           {
             selectedUser ? (
@@ -75,6 +76,19 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
             ) : null
           }
         </h1>
+
+        {
+          selectedGroup && (
+            <div className="flex flex-col items-center">
+              <p className="text-white mb-1">
+                Admin: <span className="">
+                         {groupAdmin?.fullName === authUser?.fullName ? "You" : groupAdmin?.fullName}
+                       </span>
+              </p>
+              <div className="h-[0.75px] w-full bg-gray-500 mb-1" />
+            </div>
+          )
+        }
 
         {selectedUser && <p className="px-10 mx-auto">{selectedUser.bio}</p>}
 
@@ -103,8 +117,7 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
             {visibleMembers.map((member) => (
               <div key={member._id}>
                 <p>
-                  {member.fullName}
-                  {member._id === authUser?._id && " (You)"}
+                  {member._id === authUser?._id ? "You" : member.fullName}
                 </p>
               </div>
             ))}
@@ -125,8 +138,7 @@ const RightSidebar = ({ showRightSide, setShowRightSide }: HomePageProps) => {
                   <h2 className="text-lg font-semibold mb-4">Group Members</h2>
                   {sortedMembers.map((member) => (
                     <div key={member._id} className="mb-2 text-sm">
-                      {member.fullName}
-                      {member._id === authUser?._id && " (You)"}
+                      {member._id === authUser?._id ? "You" : member.fullName}
                     </div>
                   ))}
                   <button onClick={() => setShowAllMembers(false)} className="mt-4 bg-purple-500 text-white px-4 py-2 rounded">

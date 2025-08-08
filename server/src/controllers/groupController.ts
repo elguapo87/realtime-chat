@@ -119,7 +119,10 @@ export const getAllUsersInGroup = async (req: AuthenticatedRequest, res: Respons
     try {
         const { groupId } = req.params;
 
-        const group = await groupModel.findById(groupId).select("members").populate("members", "fullName profileImage");
+        const group = await groupModel.findById(groupId)
+            .select("members createdBy")
+            .populate("members", "fullName profileImage")
+            .populate("createdBy", "fullName profileImage")
 
         if (!group) {
             res.json({ success: false, message: "Group not found" });

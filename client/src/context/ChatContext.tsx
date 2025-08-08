@@ -33,6 +33,7 @@ type GroupMembers = {
     _id: string;
     fullName: string;
     profileImage: string;
+    createdBy?: string;
 };
 
 interface ChatContextType {
