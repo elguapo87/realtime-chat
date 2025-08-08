@@ -115,15 +115,18 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 
-export const getAllUsersInGroup = async (req: AuthenticatedRequest, res: Response) => {
+export const getAllUsersInGroup = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        const user = req.user;
+        const { groupId } = req.params;
 
-        const groupUsers = await groupModel.find({}).select("members").populate("members", "fullName profileImage");
+        const group = await groupModel.findById(groupId).select("members").populate("members", "fullName profileImage");
 
-        const allMembers = groupUsers.flatMap(group => group.members);
+        if (!group) {
+            res.json({ success: false, message: "Group not found" });
+            return;
+        }
 
-        res.json({ success: true, members: allMembers });
+        res.json({ success: true, members: group.members });
 
     } catch (error) {
         console.error(error);

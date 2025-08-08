@@ -244,7 +244,7 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
     // Function to get all users of group
     const getAllUsersOfGroup = async () => {
         try {
-            const { data } = await axios.get("/api/group/users");
+            const { data } = await axios.get(`/api/group/users/${selectedGroup?._id}`);
             if (data.success) {
                 setGroupMembers(data.members);
 

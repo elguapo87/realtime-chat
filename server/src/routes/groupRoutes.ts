@@ -8,7 +8,7 @@ router.post("/create", protectRoute, createGroup);
 router.get("/user-groups", protectRoute, getUserGroups);
 router.get("/messages/:groupId", protectRoute, getGroupMessages);
 router.post("/send/:id", protectRoute, sendMessage);
-router.get("/users", protectRoute, getAllUsersInGroup);
+router.get("/users/:groupId", protectRoute, getAllUsersInGroup);
 router.post("/update/:groupId", protectRoute, updateGroup);
 router.post("/leave/:groupId", protectRoute, leaveGroup);
 
