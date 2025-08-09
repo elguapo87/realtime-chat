@@ -362,7 +362,6 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         const handleGroupMessage = (newGroupMessage: MessageDataType) => {
             if (selectedGroup && newGroupMessage.groupId === selectedGroup._id) {
                 setMessages(prev => [...prev, newGroupMessage]);
-                axios.post(`/api/group/mark/${newGroupMessage._id}`);
             }
         };
 
