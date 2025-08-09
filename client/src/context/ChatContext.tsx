@@ -64,6 +64,7 @@ interface ChatContextType {
     getAllUsersOfGroup: () => Promise<void>;
     updateGroup: (groupId: string, groupData: { name?: string, members?: string[], image?: string }) => Promise<void>;
     leaveGroup: (groupId: string) => Promise<void>;
+    deleteGroup: (groupId: string) => Promise<void>;
 };
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -302,6 +303,21 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    // Function to delete group
+    const deleteGroup = async (groupId: string) => {
+        try {
+            const { data } = await axios.delete(`/api/group/delete/${groupId}`);
+            if (data.success) {
+                toast.success(data.message);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast.error(errMessage);
+        }
+    };
+
     useEffect(() => {
         if (!socket) return;
         if (selectedGroup?._id) {
@@ -468,7 +484,8 @@ const ChatContextProvider = ({ children }: { children: React.ReactNode }) => {
         setGroupMembers,
         getAllUsersOfGroup,
         updateGroup,
-        leaveGroup
+        leaveGroup,
+        deleteGroup
     };
 
     return (

@@ -12,11 +12,13 @@ const Sidebar = () => {
 
   const chatContext = useContext(ChatContext);
   if (!chatContext) throw new Error("Sidebar must be within ChatContextProvider");
-  const { users, getUsers, selectedUser, setSelectedUser, unseenMessages, setUnseenMessages, groups, selectedGroup, setSelectedGroup, getUserGroups, getGroupMessages } = chatContext;
+  const { users, getUsers, selectedUser, setSelectedUser, unseenMessages, setUnseenMessages, groups, selectedGroup, setSelectedGroup, getUserGroups, getGroupMessages, deleteGroup, setGroups } = chatContext;
 
   const [input, setInput] = useState("");
 
   const [showMenu, setShowMenu] = useState(false);
+
+  const [openGroupButtons, setOpenGroupButtons] = useState(false);
 
   const navigate = useNavigate();
 
@@ -29,6 +31,27 @@ const Sidebar = () => {
     )
     : groups.filter((group) => authUser && group.members.includes(authUser._id));
 
+  
+  const handleDeleteGroup = async (groupId: string) => {
+    const confirmation = window.confirm("Are you sure?");
+    if (!confirmation) return;
+
+    const groupToDelete = groups.find((g) => g._id === groupId);
+    if (!groupToDelete) return;
+
+    try {
+      await deleteGroup(groupId);
+
+      setGroups((prev) => prev.filter((g) => g._id !== groupId));
+
+      if (selectedGroup?._id === groupId) {
+        setSelectedGroup(null);
+      } 
+
+    } catch (err) {
+      console.error("Error deleting group:", err);
+    }
+  };
 
   useEffect(() => {
     getUsers();
@@ -82,8 +105,22 @@ const Sidebar = () => {
 
               <span className="bg-purple-500 text-white text-xs ml-3 rounded px-0.75">Group</span>
 
-              <div onClick={() => navigate(`/update/${group._id}`)} className="ml-5 text-xs uppercase bg-blue-600 text-white rounded py-0.5 px-2">Edit</div>
-              
+              {
+                authUser?._id === group.createdBy
+                   ?
+                <span onClick={(e) => { e.stopPropagation(); setOpenGroupButtons((prev) => !prev); }} className="ml-3 hover:scale-105 transition-all duration-300">...</span>
+                   :
+                <div onClick={() => navigate(`/update/${group._id}`)} className="ml-3 text-[11px] uppercase bg-blue-600 text-white rounded py-0.5 px-2 font-semibold max-md:pt-1">Edit</div>
+              }
+
+              {
+                openGroupButtons
+                   &&
+                <div onClick={(e) => e.stopPropagation()} className={`absolute ${selectedGroup || selectedUser ? "top-10 right-0" : "top-[80%] right-[20%] md:top-[80%] md:right-[50%]"} z-20 w-max flex flex-col gap-1 p-5 text-center rounded-md bg-[#282142] border border-gray-600 text-gray-100`}>
+                  <div onClick={() => navigate(`/update/${group._id}`)} className="text-[11px] uppercase bg-blue-600 text-white rounded py-0.5 px-2 font-semibold max-md:pt-1">Edit</div>
+                  {authUser?._id === group.createdBy && <div onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group._id) }} className="text-[11px] uppercase bg-red-500 text-white rounded py-0.5 px-2 font-semibold">Delete</div>}
+                </div>
+              }
             </div>
           ))}
 

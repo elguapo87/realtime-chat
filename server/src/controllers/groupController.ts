@@ -223,3 +223,41 @@ export const leaveGroup = async (req: AuthenticatedRequest, res: Response) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
+export const deleteGroup = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?._id as string;
+        const { groupId } = req.params;
+
+        const group = await groupModel.findById(groupId);
+        if (!group) {
+            res.status(404).json({ success: false, message: "Group not found" });
+            return;
+        }
+
+        if (userId.toString() !== group.createdBy.toString()) {
+            res.status(403).json({ success: false, message: "Unauthorized actions" });
+            return;
+        }
+
+        if (group.image) {
+            try {
+                const publicId = group.image.split("/").pop().split(".")[0];
+                await cloudinary.uploader.destroy(`realtime_chat_test/${publicId}`);
+            } catch (error) {
+                const errMessage = error instanceof Error ? error.message : "An unknown error occurred";
+                console.warn("Cloudinary delete failed:", errMessage);
+            }
+        }
+
+        await groupMessageModel.deleteMany({ groupId });
+
+        await groupModel.findByIdAndDelete(groupId);
+
+        res.json({ success: true, message: "Group and related messages deleted" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
